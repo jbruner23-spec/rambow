@@ -1,0 +1,26 @@
+# DigitalOcean App Platform spec — Rambow (Vite static SPA).
+# Free Starter static-site component. The Supabase URL + anon (publishable) key
+# are public by design (RLS-gated, already shipped in the client bundle), so
+# they're safe as build-time envs here.
+#
+# Deploy: DO dashboard → Create App → pick the jbruner23-spec/rambow repo →
+# it auto-reads this spec → Create. deploy_on_push keeps it in sync with main.
+name: rambow
+region: sfo
+static_sites:
+  - name: rambow
+    github:
+      repo: jbruner23-spec/rambow
+      branch: main
+      deploy_on_push: true
+    environment_slug: node-js
+    build_command: npm run build
+    output_dir: dist
+    catchall_document: index.html   # SPA fallback so /player/:name resolves on refresh
+    envs:
+      - key: VITE_SUPABASE_URL
+        scope: BUILD_TIME
+        value: https://yibuqsvcxugpkxogwspn.supabase.co
+      - key: VITE_SUPABASE_ANON_KEY
+        scope: BUILD_TIME
+        value: sb_publishable_oaPDlIsS0tHykMaYO8akfg_u1ow60RO
