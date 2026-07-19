@@ -25,6 +25,32 @@ confirm `owned_parallels` in `rmb_rainbow_progress` equals the distinct owned pa
 count, and that no owned card is left with `parallel_id is null` (the rainbow page
 surfaces those in an "Owned · not yet on the checklist" strip).
 
+## Reusable seeder
+
+`rmb_seed_checklist(set_id, base_jsonb, source, status)` (migration 0007) does the
+whole pattern with **name-normalized matching** (`rmb_norm` strips "Prizm"/"1/1"), so
+"Blue Ice Prizm" / "Black Prizm 1/1" match the checklist's "Blue Ice" / "Black" and
+aren't double-counted as missing. After seeding, `owned_parallels` must equal the
+distinct owned count and `parallel_id is null` must be 0 for that set.
+
+## Seeded rainbows
+
+| Rainbow | Completion | Source |
+|---|---|---|
+| Cooper Kupp 2022 Select #8 | 21/25 | 2021 Select Concourse (proxy, `estimated`) |
+| Aaron Donald 2021 Select #120 | 22/27 | 2021 Select Premier (`verified`) |
+| Aaron Donald 2020 Select #133 | 17/22 | 2021 Select Premier (proxy, `estimated`) |
+| Aaron Donald 2019 Select #44 | 12/17 | 2021 Select Concourse (proxy, `estimated`) |
+| Matthew Stafford 2021 Select #20 | 10/20 | 2021 Select Concourse (`verified`) |
+| Aaron Donald 2022 Prizm #164 | 14/37 | 2022 Prizm (`verified`) |
+| Aaron Donald 2021 Prizm #69 | 14/39 | 2021 Prizm (`verified`) |
+| Matthew Stafford 2022 Prizm #159 | 11/37 | 2022 Prizm (`verified`) |
+| Aaron Donald 2023 Prizm #162 | 14/49 | 2023 Prizm (`verified`) |
+
+Prizm base lists are exact per year (Cardboard Connection); Select proxy tiers reuse
+the 2021 structure and are marked `estimated`. Missing exotic parallels you don't own
+may still be absent, so a % can ease as the checklist grows.
+
 ## Checklist confidence
 
 Checklists currently cover base-Prizm parallels + everything owned; exotic parallels
