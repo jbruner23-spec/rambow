@@ -20,6 +20,7 @@
 
   --shadow: 0 1px 2px rgba(16, 33, 75, .06), 0 6px 20px rgba(16, 33, 75, .06);
   --radius: 12px;
+  --rainbow: linear-gradient(90deg, #e5483f, #ffa300, #ffd94d, #3f9e57, #2f7dd1, #7b5bd6);
 }
 
 * { box-sizing: border-box; }
@@ -38,23 +39,29 @@ button { font-family: inherit; cursor: pointer; }
 h1, h2, h3, h4, .display { font-family: 'Archivo', system-ui, sans-serif; letter-spacing: -0.01em; }
 
 /* ---------- App shell ---------- */
+.header { position: sticky; top: 0; z-index: 20; box-shadow: 0 2px 12px rgba(0, 18, 56, .25); }
 .topbar {
-  position: sticky; top: 0; z-index: 20;
   background: var(--navy); color: #fff;
   display: flex; align-items: center; justify-content: space-between;
   padding: 12px 18px; gap: 12px;
-  box-shadow: 0 2px 12px rgba(0, 18, 56, .25);
 }
+.topbar-left { display: flex; align-items: center; gap: 22px; min-width: 0; }
 .wordmark {
-  font-family: 'Archivo'; font-weight: 900; font-size: 22px; text-transform: uppercase;
+  font-family: 'Archivo'; font-weight: 900; font-size: 22px; text-transform: uppercase; flex: none;
   background: linear-gradient(100deg, #6f9be6 0%, #a9c4f2 40%, var(--sol) 100%);
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
-.topbar .sub { font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--sol); font-weight: 700; }
+.topnav-group { display: flex; gap: 18px; }
+.topnav {
+  color: rgba(255,255,255,.72); font-size: 13px; font-weight: 600;
+  padding-bottom: 3px; border-bottom: 2px solid transparent; transition: color .12s, border-color .12s;
+}
+.topnav:hover { color: #fff; }
+.topnav.active { color: #fff; border-bottom-color: var(--sol); }
+.topstat { font-size: 11px; color: rgba(255,255,255,.5); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rainbow-strip { height: 3px; background: var(--rainbow); }
 .back { color: rgba(255,255,255,.8); font-size: 13px; font-weight: 600; display: inline-flex; gap: 6px; align-items: center; }
 .back:hover { color: #fff; }
-.topnav { color: rgba(255,255,255,.82); font-size: 13px; font-weight: 600; padding: 6px 12px; border: 1px solid rgba(255,255,255,.22); border-radius: 8px; }
-.topnav:hover { color: #fff; border-color: var(--sol); }
 
 .wrap { max-width: 940px; margin: 0 auto; padding: 18px 16px 60px; }
 
@@ -79,14 +86,15 @@ h1, h2, h3, h4, .display { font-family: 'Archivo', system-ui, sans-serif; letter
 /* ---------- Featured chase cards ---------- */
 .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .feature {
-  background: var(--navy); color: #fff; border-radius: var(--radius); padding: 18px 18px 16px;
-  display: flex; flex-direction: column; gap: 8px; position: relative; overflow: hidden;
+  background: var(--navy); color: #fff; border-radius: var(--radius); padding: 16px 18px;
+  display: flex; flex-direction: row; align-items: center; gap: 14px; position: relative; overflow: hidden;
   box-shadow: var(--shadow);
 }
 .feature::after {
   content: ''; position: absolute; right: -30px; top: -30px; width: 120px; height: 120px;
   background: radial-gradient(circle, rgba(255,163,0,.35), transparent 70%);
 }
+.feature .fbody { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .feature .jersey { font-family: 'Archivo'; font-weight: 900; font-size: 40px; color: rgba(255,255,255,.14); position: absolute; right: 14px; bottom: 6px; }
 .feature .kicker { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--sol); font-weight: 700; }
 .feature h3 { margin: 0; font-size: 19px; font-weight: 800; }
@@ -179,11 +187,27 @@ h1, h2, h3, h4, .display { font-family: 'Archivo', system-ui, sans-serif; letter
 .rainbow-head { background: var(--navy); color: #fff; border-radius: var(--radius); padding: 18px 20px; margin-bottom: 20px; box-shadow: var(--shadow); }
 .rainbow-head h1 { margin: 0 0 2px; font-size: 22px; }
 .rainbow-head .sub { font-size: 12.5px; color: rgba(255,255,255,.7); margin-bottom: 14px; }
-.rainbow-head .prog { display: flex; align-items: center; gap: 14px; }
-.rainbow-head .prog .big { font-family: 'Archivo'; font-weight: 900; font-size: 26px; color: var(--sol); white-space: nowrap; }
-.rainbow-head .prog .meter { flex: 1; background: rgba(255,255,255,.15); }
 .rainbow-head .estnote { font-size: 11px; color: rgba(255,255,255,.6); margin-top: 8px; }
 .chip-chase { font-size: 9px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--navy-deep); background: var(--sol); padding: 2px 8px; border-radius: 99px; margin-left: 8px; vertical-align: middle; }
+
+/* v2 rainbow header: ring + body + "to go" chip */
+.rainbow-head.v2 { display: flex; align-items: center; gap: 16px; }
+.rainbow-head.v2 .rh-body { flex: 1; min-width: 0; }
+.rainbow-head.v2 h1 { margin: 0 0 3px; }
+.rainbow-head.v2 .sub { margin-bottom: 8px; }
+.rainbow-head.v2 .estnote { margin-top: 0; }
+.togo { flex: none; align-self: flex-start; font-size: 12px; font-weight: 800; color: var(--sol); background: rgba(255,163,0,.14); border: 1px solid rgba(255,163,0,.35); padding: 4px 12px; border-radius: 99px; white-space: nowrap; }
+
+/* tier section headers */
+.tier-h { display: flex; align-items: baseline; gap: 9px; font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--royal); margin: 22px 0 10px; }
+.tier-h::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.tier-h .cnt { color: var(--dim); font-weight: 700; letter-spacing: 0; text-transform: none; font-size: 12px; }
+
+/* tier-colored tile bottom edge */
+.tile.edge-one_of_one { border-bottom: 3px solid var(--sol); }
+.tile.edge-short_print { border-bottom: 3px solid var(--sol-deep); }
+.tile.edge-numbered { border-bottom: 3px solid var(--royal); }
+.tile.edge-base, .tile.edge-unknown { border-bottom: 3px solid var(--line); }
 
 .tile.missing { opacity: 1; }
 .tile.missing .art {
@@ -334,6 +358,8 @@ h1, h2, h3, h4, .display { font-family: 'Archivo', system-ui, sans-serif; letter
 @media (max-width: 560px) {
   .feature-grid { grid-template-columns: 1fr; }
   .statband b { font-size: 17px; }
+  .topstat { display: none; }          /* nav takes priority on narrow screens */
+  .topbar-left { gap: 16px; }
   /* left-anchor tooltips so they don't clip at screen edges */
   .term-tip { left: 0; margin-left: 0; width: min(260px, calc(100vw - 32px)); }
 }

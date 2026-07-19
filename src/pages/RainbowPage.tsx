@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import type { Card, CardSet, Parallel, RainbowProgress } from '../types'
+import type { Card, CardSet, Parallel, RainbowProgress, Tier } from '../types'
 import { TIER_LABEL } from '../types'
 import { CardArt, CardModal, serialText, TIER_TERM } from '../components/cards'
 import { HuntPanel } from '../components/HuntPanel'
 import { Term, termTitle } from '../components/Term'
+import { Ring } from '../components/Ring'
 
 type ParallelRow = Parallel & { rmb_cards: Card[] }
 
@@ -63,7 +64,57 @@ export default function RainbowPage({ setId }: { setId: number }) {
   const total = prog?.checklist_total ?? rows.length
   const owned = prog?.owned_parallels ?? rows.filter((p) => p.rmb_cards.length).length
   const pct = total ? Math.round((100 * owned) / total) : 0
-  const sorted = [...rows].sort((a, b) => rarityKey(a) - rarityKey(b))
+  const togo = Math.max(0, total - owned)
+
+  const renderTile = (p: ParallelRow) => {
+    const card = p.rmb_cards[0]
+    const grail = p.tier === 'one_of_one'
+    const edge = `edge-${p.tier}`
+    if (card) {
+      return (
+        <button className={`tile ${edge}`} key={p.id} onClick={() => setActive({ card, label })}>
+          <div className={`art${grail ? ' grail' : ''}`}>
+            <span className={`badge${grail ? ' grail' : ''}`} title={termTitle(TIER_TERM[p.tier])}>{TIER_LABEL[p.tier]}</span>
+            {card.likely_your_copy && <span className="badge yours" title={termTitle('your copy')}>Your copy</span>}
+            <CardArt url={card.image_url} name={p.name} />
+          </div>
+          <div className="cap">
+            <div className="pn">{p.name}</div>
+            <div className="sn">{serialText(card) ?? runText(p)}{p.rmb_cards.length > 1 ? ` · ×${p.rmb_cards.length}` : ''}</div>
+          </div>
+        </button>
+      )
+    }
+    return (
+      <button className={`tile missing ${edge}${p.image_url ? ' has-ref' : ''}`} key={p.id} onClick={() => setHunt(p)}>
+        <div className={`art${grail ? ' grail' : ''}`}>
+          <span className="badge" title={termTitle(TIER_TERM[p.tier])}>{TIER_LABEL[p.tier]}</span>
+          <CardArt url={p.image_url} name={p.name} />
+        </div>
+        <div className="cap">
+          <div className="pn">{p.name}</div>
+          <div className="sn"><span className="miss-label">Hunt</span> · {runText(p)}</div>
+        </div>
+      </button>
+    )
+  }
+
+  const TIERS: { label: string; keep: (t: Tier) => boolean }[] = [
+    { label: 'Grails', keep: (t) => t === 'one_of_one' },
+    { label: 'Short prints', keep: (t) => t === 'short_print' },
+    { label: 'Numbered', keep: (t) => t === 'numbered' },
+    { label: 'Base', keep: (t) => t === 'base' || t === 'unknown' },
+  ]
+  const grouped = TIERS.map((g) => ({
+    label: g.label,
+    rows: rows.filter((p) => g.keep(p.tier)).sort((a, b) => rarityKey(a) - rarityKey(b)),
+  }))
+  // catch any parallel whose tier isn't one of the known values, so nothing
+  // silently vanishes from the grid while still counting in the header total
+  const matched = new Set(grouped.flatMap((g) => g.rows.map((p) => p.id)))
+  const other = rows.filter((p) => !matched.has(p.id)).sort((a, b) => rarityKey(a) - rarityKey(b))
+  if (other.length) grouped.push({ label: 'Other', rows: other })
+  const groups = grouped.filter((g) => g.rows.length > 0)
 
   return (
     <>
@@ -72,57 +123,28 @@ export default function RainbowPage({ setId }: { setId: number }) {
         ← {set.player}
       </Link>
 
-      <div className="rainbow-head">
-        <h1>{set.player}
-          {pct >= 50 && <Term t="active chase"><span className="chip-chase">Active chase</span></Term>}
-        </h1>
-        <div className="sub">{label} · <Term t="rainbow">rainbow</Term></div>
-        <div className="prog">
-          <span className="big">{owned}/{total}</span>
-          <div className="meter"><i style={{ width: `${pct}%` }} /></div>
-          <span style={{ fontWeight: 700, fontSize: 14 }}>{pct}%</span>
+      <div className="rainbow-head v2">
+        <Ring pct={pct} size={64} />
+        <div className="rh-body">
+          <h1>{set.player}
+            {pct >= 50 && <Term t="active chase"><span className="chip-chase">Active chase</span></Term>}
+          </h1>
+          <div className="sub">{label} · {owned} of {total} <Term t="parallel">parallels</Term></div>
+          <div className="estnote">
+            Checklist covers base Prizm parallels + everything owned; exotic parallels are still being verified.
+          </div>
         </div>
-        <div className="estnote">
-          Checklist covers base Prizm parallels + everything owned; exotic parallels are still being verified,
-          so completion may ease as the checklist grows.
-        </div>
+        {togo > 0 && <span className="togo">{togo} to go</span>}
       </div>
 
-      <div className="tile-grid">
-        {sorted.map((p) => {
-          const card = p.rmb_cards[0]
-          const grail = p.tier === 'one_of_one'
-          if (card) {
-            return (
-              <button className="tile" key={p.id}
-                      onClick={() => setActive({ card, label })}>
-                <div className={`art${grail ? ' grail' : ''}`}>
-                  <span className={`badge${grail ? ' grail' : ''}`} title={termTitle(TIER_TERM[p.tier])}>{TIER_LABEL[p.tier]}</span>
-                  {card.likely_your_copy && <span className="badge yours" title={termTitle('your copy')}>Your copy</span>}
-                  <CardArt url={card.image_url} name={p.name} />
-                </div>
-                <div className="cap">
-                  <div className="pn">{p.name}</div>
-                  <div className="sn">{serialText(card) ?? runText(p)}{p.rmb_cards.length > 1 ? ` · ×${p.rmb_cards.length}` : ''}</div>
-                </div>
-              </button>
-            )
-          }
-          return (
-            <button className={`tile missing${p.image_url ? ' has-ref' : ''}`} key={p.id}
-                    onClick={() => setHunt(p)}>
-              <div className={`art${grail ? ' grail' : ''}`}>
-                <span className="badge" title={termTitle(TIER_TERM[p.tier])}>{TIER_LABEL[p.tier]}</span>
-                <CardArt url={p.image_url} name={p.name} />
-              </div>
-              <div className="cap">
-                <div className="pn">{p.name}</div>
-                <div className="sn"><span className="miss-label">Hunt</span> · {runText(p)}</div>
-              </div>
-            </button>
-          )
-        })}
-      </div>
+      {groups.map((g) => (
+        <div key={g.label}>
+          <div className="tier-h">{g.label}
+            <span className="cnt">{g.rows.filter((p) => p.rmb_cards.length).length}/{g.rows.length}</span>
+          </div>
+          <div className="tile-grid">{g.rows.map(renderTile)}</div>
+        </div>
+      ))}
 
       {unlinked.length > 0 && (
         <>

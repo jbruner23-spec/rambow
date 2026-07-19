@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { money } from '../components/cards'
 import { SearchBox } from '../components/SearchBox'
 import { Term } from '../components/Term'
+import { Ring } from '../components/Ring'
 
 interface PlayerStat {
   name: string
@@ -65,6 +66,9 @@ export default function Dashboard() {
   const rail = chases
     .map((c) => ({ ...c, pct: c.checklist_total ? Math.round((100 * c.owned_parallels) / c.checklist_total) : 0 }))
     .sort((a, b) => b.pct - a.pct)
+  // best (highest-%) chase per player — rail is sorted desc, so the first wins
+  const bestByPlayer: Record<string, (typeof rail)[number]> = {}
+  for (const c of rail) if (!bestByPlayer[c.player]) bestByPlayer[c.player] = c
 
   return (
     <>
@@ -82,15 +86,23 @@ export default function Dashboard() {
         <>
           <div className="eyebrow">Featured chases</div>
           <div className="feature-grid">
-            {featured.map((s) => (
-              <Link key={s.name} to={`/player/${encodeURIComponent(s.name)}`} className="feature">
-                <span className="jersey">{s.jersey_no ? `#${s.jersey_no}` : ''}</span>
-                <span className="kicker">Featured</span>
-                <h3>{s.name}</h3>
-                <div className="fstat"><b>{s.cards}</b> cards · <b>{s.sets}</b> sets</div>
-                <div className="fstat">{s.ones} one-of-one{s.ones === 1 ? '' : 's'} · {money(s.spend)} in</div>
-              </Link>
-            ))}
+            {featured.map((s) => {
+              const best = bestByPlayer[s.name]
+              return (
+                <Link key={s.name} to={`/player/${encodeURIComponent(s.name)}`} className="feature">
+                  <span className="jersey">{s.jersey_no ? `#${s.jersey_no}` : ''}</span>
+                  {best && <Ring pct={best.pct} size={56} />}
+                  <div className="fbody">
+                    <span className="kicker">{best ? 'Featured · best chase' : 'Featured'}</span>
+                    <h3>{s.name}</h3>
+                    {best
+                      ? <div className="fstat">{best.year} {best.product}{best.card_no ? ` #${best.card_no}` : ''} · {best.owned_parallels}/{best.checklist_total} · <b style={{ color: 'var(--sol)' }}>{best.checklist_total - best.owned_parallels} to go</b></div>
+                      : <div className="fstat"><b>{s.cards}</b> cards · <b>{s.sets}</b> sets</div>}
+                    <div className="fstat">{s.cards} cards · {s.ones} one-of-one{s.ones === 1 ? '' : 's'}</div>
+                  </div>
+                </Link>
+              )
+            })}
           </div>
         </>
       )}

@@ -1,17 +1,33 @@
-import { BrowserRouter, Routes, Route, Link, useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { BrowserRouter, Routes, Route, Link, NavLink, useParams } from 'react-router-dom'
+import { supabase } from './lib/supabase'
 import Dashboard from './pages/Dashboard'
 import PlayerPage from './pages/PlayerPage'
 import RainbowPage from './pages/RainbowPage'
 import Watchlist from './pages/Watchlist'
 
 function TopBar() {
+  const [stat, setStat] = useState<{ cards: number; rainbows: number } | null>(null)
+  useEffect(() => {
+    Promise.all([
+      supabase.from('rmb_cards').select('*', { count: 'exact', head: true }),
+      supabase.from('rmb_card_sets').select('*', { count: 'exact', head: true }).eq('checklist_ready', true),
+    ]).then(([c, r]) => setStat({ cards: c.count ?? 0, rainbows: r.count ?? 0 }))
+  }, [])
   return (
-    <div className="topbar">
-      <Link to="/" style={{ display: 'flex', flexDirection: 'column' }}>
-        <span className="wordmark">Rambow</span>
-      </Link>
-      <Link to="/watchlist" className="topnav">Watchlist</Link>
-    </div>
+    <header className="header">
+      <div className="topbar">
+        <div className="topbar-left">
+          <Link to="/" className="wordmark">Rambow</Link>
+          <nav className="topnav-group">
+            <NavLink to="/" end className="topnav">Dashboard</NavLink>
+            <NavLink to="/watchlist" className="topnav">Watchlist</NavLink>
+          </nav>
+        </div>
+        {stat && <span className="topstat">{stat.cards} cards · {stat.rainbows} rainbows</span>}
+      </div>
+      <div className="rainbow-strip" />
+    </header>
   )
 }
 
