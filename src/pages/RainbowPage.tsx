@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import type { Card, CardSet, Parallel, RainbowProgress } from '../types'
 import { TIER_LABEL } from '../types'
 import { CardArt, CardModal, serialText } from '../components/cards'
+import { HuntPanel } from '../components/HuntPanel'
 
 type ParallelRow = Parallel & { rmb_cards: Card[] }
 
@@ -25,6 +26,7 @@ export default function RainbowPage({ setId }: { setId: number }) {
   const [unlinked, setUnlinked] = useState<Card[]>([])
   const [err, setErr] = useState<string | null>(null)
   const [active, setActive] = useState<{ card: Card; label: string } | null>(null)
+  const [hunt, setHunt] = useState<Parallel | null>(null)
 
   useEffect(() => {
     let ignore = false
@@ -98,16 +100,17 @@ export default function RainbowPage({ setId }: { setId: number }) {
             )
           }
           return (
-            <div className={`tile missing${p.image_url ? ' has-ref' : ''}`} key={p.id}>
+            <button className={`tile missing${p.image_url ? ' has-ref' : ''}`} key={p.id}
+                    onClick={() => setHunt(p)}>
               <div className={`art${grail ? ' grail' : ''}`}>
                 <span className="badge">{TIER_LABEL[p.tier]}</span>
                 <CardArt url={p.image_url} name={p.name} />
               </div>
               <div className="cap">
                 <div className="pn">{p.name}</div>
-                <div className="sn"><span className="miss-label">Missing</span> · {runText(p)}</div>
+                <div className="sn"><span className="miss-label">Hunt</span> · {runText(p)}</div>
               </div>
-            </div>
+            </button>
           )
         })}
       </div>
@@ -130,6 +133,7 @@ export default function RainbowPage({ setId }: { setId: number }) {
       )}
 
       {active && <CardModal card={active.card} setLabel={active.label} onClose={() => setActive(null)} />}
+      {hunt && <HuntPanel set={set} parallel={hunt} onClose={() => setHunt(null)} />}
     </>
   )
 }
