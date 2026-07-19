@@ -15,8 +15,19 @@ interface PlayerStat {
   spend: string   // numeric column arrives from PostgREST as a string
 }
 
+interface Chase {
+  card_set_id: number
+  player: string
+  year: number
+  product: string
+  card_no: string
+  owned_parallels: number
+  checklist_total: number
+}
+
 export default function Dashboard() {
   const [stats, setStats] = useState<PlayerStat[] | null>(null)
+  const [chases, setChases] = useState<Chase[]>([])
   const [err, setErr] = useState<string | null>(null)
 
   useEffect(() => {
@@ -25,6 +36,10 @@ export default function Dashboard() {
         if (error) setErr(error.message)
         else setStats(data as PlayerStat[])
       })
+    supabase.from('rmb_rainbow_progress')
+      .select('card_set_id, player, year, product, card_no, owned_parallels, checklist_total')
+      .eq('checklist_ready', true)
+      .then(({ data }) => setChases((data as Chase[]) ?? []))
   }, [])
 
   if (err) return <div className="empty">Couldn’t load: {err}</div>
@@ -38,6 +53,9 @@ export default function Dashboard() {
     { cards: 0, sets: 0, ones: 0, graded: 0, spend: 0 },
   )
   const featured = stats.filter((s) => s.featured)
+  const rail = chases
+    .map((c) => ({ ...c, pct: c.checklist_total ? Math.round((100 * c.owned_parallels) / c.checklist_total) : 0 }))
+    .sort((a, b) => b.pct - a.pct)
 
   return (
     <>
@@ -60,6 +78,24 @@ export default function Dashboard() {
                 <h3>{s.name}</h3>
                 <div className="fstat"><b>{s.cards}</b> cards · <b>{s.sets}</b> sets</div>
                 <div className="fstat">{s.ones} one-of-one{s.ones === 1 ? '' : 's'} · {money(s.spend)} in</div>
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
+
+      {rail.length > 0 && (
+        <>
+          <div className="eyebrow">Closest to done</div>
+          <div className="chase-rail">
+            {rail.map((c) => (
+              <Link key={c.card_set_id} to={`/rainbow/${c.card_set_id}`} className="chase">
+                <div className="cinfo">
+                  <div className="ctitle">{c.player}</div>
+                  <div className="cmeta">{c.year} {c.product}{c.card_no ? ` #${c.card_no}` : ''} · {c.owned_parallels}/{c.checklist_total} parallels</div>
+                </div>
+                <div className="cbar"><div className="meter sm"><i style={{ width: `${c.pct}%` }} /></div></div>
+                <div className="cpct">{c.pct}%</div>
               </Link>
             ))}
           </div>

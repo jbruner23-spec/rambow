@@ -154,6 +154,42 @@ h1, h2, h3, h4, .display { font-family: 'Archivo', system-ui, sans-serif; letter
 .modal .close { float: right; background: none; border: none; font-size: 22px; color: var(--muted); line-height: 1; padding: 0 0 0 10px; }
 .modal .note { margin-top: 12px; font-size: 12px; color: var(--muted); background: var(--bone); border-radius: 8px; padding: 8px 10px; }
 
+/* ---------- Completion meter ---------- */
+.meter { height: 9px; border-radius: 99px; background: var(--panel); overflow: hidden; }
+.meter > i { display: block; height: 100%; background: linear-gradient(90deg, var(--royal), var(--sol)); border-radius: 99px; }
+.meter.sm { height: 6px; }
+
+.chase-rail { display: flex; flex-direction: column; gap: 8px; }
+.chase {
+  display: flex; align-items: center; gap: 14px; background: #fff; border: 1px solid var(--line);
+  border-radius: 10px; padding: 12px 16px; box-shadow: var(--shadow); transition: transform .08s, border-color .12s;
+}
+.chase:hover { transform: translateY(-1px); border-color: var(--sol); }
+.chase .cinfo { min-width: 0; flex: 1; }
+.chase .ctitle { font-weight: 700; font-size: 14px; }
+.chase .cmeta { font-size: 11.5px; color: var(--muted); }
+.chase .cpct { font-family: 'Archivo'; font-weight: 900; font-size: 20px; color: var(--royal); }
+.chase .cbar { width: 120px; flex: none; }
+
+/* ---------- Rainbow detail ---------- */
+.rainbow-head { background: var(--navy); color: #fff; border-radius: var(--radius); padding: 18px 20px; margin-bottom: 20px; box-shadow: var(--shadow); }
+.rainbow-head h1 { margin: 0 0 2px; font-size: 22px; }
+.rainbow-head .sub { font-size: 12.5px; color: rgba(255,255,255,.7); margin-bottom: 14px; }
+.rainbow-head .prog { display: flex; align-items: center; gap: 14px; }
+.rainbow-head .prog .big { font-family: 'Archivo'; font-weight: 900; font-size: 26px; color: var(--sol); white-space: nowrap; }
+.rainbow-head .prog .meter { flex: 1; background: rgba(255,255,255,.15); }
+.rainbow-head .estnote { font-size: 11px; color: rgba(255,255,255,.6); margin-top: 8px; }
+.chip-chase { font-size: 9px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--navy-deep); background: var(--sol); padding: 2px 8px; border-radius: 99px; margin-left: 8px; vertical-align: middle; }
+
+.tile.missing { opacity: 1; }
+.tile.missing .art {
+  background: repeating-linear-gradient(45deg, #efeadd, #efeadd 6px, #e6e0d0 6px, #e6e0d0 12px);
+}
+.tile.missing .art .ph { color: rgba(16,33,75,.4); }
+.tile.missing .badge { background: var(--dim); }
+.tile.missing .cap .pn { color: var(--muted); }
+.tile.missing .miss-label { font-size: 9px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--sol-deep); }
+
 .loading, .empty { text-align: center; color: var(--muted); padding: 60px 20px; font-size: 14px; }
 
 @media (max-width: 560px) {

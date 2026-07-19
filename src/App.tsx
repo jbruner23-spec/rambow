@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Link, useParams } from 'react-router-dom'
 import Dashboard from './pages/Dashboard'
 import PlayerPage from './pages/PlayerPage'
+import RainbowPage from './pages/RainbowPage'
 
 function TopBar() {
   return (
@@ -18,6 +19,11 @@ function PlayerRoute() {
   return <PlayerPage name={decodeURIComponent(name ?? '')} />
 }
 
+function RainbowRoute() {
+  const { id } = useParams()
+  return <RainbowPage setId={Number(id)} />
+}
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -26,6 +32,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/player/:name" element={<PlayerRoute />} />
+          <Route path="/rainbow/:id" element={<RainbowRoute />} />
           <Route path="*" element={<Dashboard />} />
         </Routes>
       </div>

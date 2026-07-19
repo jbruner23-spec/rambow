@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import type { Card, CardSet } from '../types'
+import type { Card, CardSet, RainbowProgress } from '../types'
 import { CardTile, CardModal } from '../components/cards'
 
 type SetWithCards = CardSet & { rmb_cards: Card[] }
+type Prog = { ready: boolean; pct: number; owned: number; total: number }
 
 function setLabel(s: CardSet) {
   return `${s.year} ${s.product}${s.card_no ? ` #${s.card_no}` : ''}`
@@ -12,6 +13,7 @@ function setLabel(s: CardSet) {
 
 export default function PlayerPage({ name }: { name: string }) {
   const [sets, setSets] = useState<SetWithCards[] | null>(null)
+  const [prog, setProg] = useState<Record<number, Prog>>({})
   const [err, setErr] = useState<string | null>(null)
   const [active, setActive] = useState<{ card: Card; label: string } | null>(null)
 
@@ -30,6 +32,18 @@ export default function PlayerPage({ name }: { name: string }) {
         if (ignore) return
         if (error) setErr(error.message)
         else setSets(data as SetWithCards[])
+      })
+    supabase.from('rmb_rainbow_progress').select('*').eq('player', name)
+      .then(({ data }) => {
+        if (ignore || !data) return
+        const map: Record<number, Prog> = {}
+        for (const r of data as RainbowProgress[]) {
+          map[r.card_set_id] = {
+            ready: r.checklist_ready, owned: r.owned_parallels, total: r.checklist_total,
+            pct: r.checklist_total ? Math.round((100 * r.owned_parallels) / r.checklist_total) : 0,
+          }
+        }
+        setProg(map)
       })
     return () => { ignore = true }
   }, [name])
@@ -56,19 +70,29 @@ export default function PlayerPage({ name }: { name: string }) {
         {totalCards} cards across {sets.length} card set{sets.length === 1 ? '' : 's'}
       </div>
 
-      {ordered.map((s) => (
-        <div className="setblock" key={s.id}>
-          <div className="sethead">
-            <span className="settitle">{setLabel(s)}</span>
-            <span className="owned">{s.rmb_cards.length} owned</span>
+      {ordered.map((s) => {
+        const p = prog[s.id]
+        return (
+          <div className="setblock" key={s.id}>
+            <div className="sethead">
+              {p?.ready
+                ? <Link to={`/rainbow/${s.id}`} className="settitle" style={{ color: 'var(--royal)' }}>{setLabel(s)} →</Link>
+                : <span className="settitle">{setLabel(s)}</span>}
+              {p?.ready
+                ? <span className="owned">{p.owned}/{p.total} · {p.pct}%</span>
+                : <span className="owned">{s.rmb_cards.length} owned</span>}
+            </div>
+            {p?.ready && (
+              <div className="meter sm" style={{ margin: '0 0 10px' }}><i style={{ width: `${p.pct}%` }} /></div>
+            )}
+            <div className="tile-grid">
+              {s.rmb_cards.map((c) => (
+                <CardTile key={c.id} card={c} onClick={() => setActive({ card: c, label: setLabel(s) })} />
+              ))}
+            </div>
           </div>
-          <div className="tile-grid">
-            {s.rmb_cards.map((c) => (
-              <CardTile key={c.id} card={c} onClick={() => setActive({ card: c, label: setLabel(s) })} />
-            ))}
-          </div>
-        </div>
-      ))}
+        )
+      })}
 
       {active && <CardModal card={active.card} setLabel={active.label} onClose={() => setActive(null)} />}
     </>
