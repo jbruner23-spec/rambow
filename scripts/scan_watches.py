@@ -51,6 +51,24 @@ def search(tok, q, limit=25):
     return r.json().get("itemSummaries", []) if r.ok else []
 
 
+# parallel-distinguishing modifiers — drop listings carrying a variant the watch
+# doesn't (e.g. a Die-Cut Gold listing for a base Gold watch). Mirrors the hunt edge fn.
+MODS = ["die cut", "no huddle", "cracked ice", "dragon scale", "color wheel", "fire ice",
+        "disco", "tiger", "cosmic", "zebra", "pulsar", "scope", "shimmer", "sparkle",
+        "wave", "ice", "hyper", "mojo", "nebula", "pandora", "snakeskin", "lazer", "laser",
+        "camo", "holo", "finite", "vinyl", "reactive", "checker", "kaboom", "sensations",
+        "meta", "astral", "celestial", "interstellar", "seismic", "honeycomb", "peacock"]
+
+
+def _pad(s):
+    return " " + re.sub(r"\s+", " ", re.sub(r"[^a-z0-9]+", " ", (s or "").lower())).strip() + " "
+
+
+def matches_parallel(title, parallel):
+    t, p = _pad(title), _pad(parallel)
+    return not any((" " + m + " ") in t and (" " + m + " ") not in p for m in MODS)
+
+
 def graded_ok(title, cond, pref):
     if pref in (None, "", "any"):
         return True
@@ -120,6 +138,8 @@ def main():
             if not (p is not None and p <= target and iid and iid not in seen):
                 continue
             if not graded_ok(title, it.get("condition"), w.get("graded_pref")):
+                continue
+            if not matches_parallel(title, w["parallel_name"]):
                 continue
             matches.append({"watch_id": w["id"], "marketplace": "ebay", "listing_id": iid,
                             "title": title, "price": p, "url": it.get("itemWebUrl") or "",

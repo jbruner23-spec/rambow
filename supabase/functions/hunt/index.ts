@@ -13,6 +13,26 @@ const cors = {
 
 let cached: { t: string; exp: number } | null = null;
 
+// Parallel-distinguishing modifiers. A listing that carries one the target
+// parallel doesn't (e.g. "Die-Cut Gold" when hunting base "Gold") is a different
+// card and gets dropped. Multi-word phrases first.
+const MODS = [
+  "die cut", "no huddle", "cracked ice", "dragon scale", "color wheel", "fire ice",
+  "disco", "tiger", "cosmic", "zebra", "pulsar", "scope", "shimmer", "sparkle",
+  "wave", "ice", "hyper", "mojo", "nebula", "pandora", "snakeskin", "lazer", "laser",
+  "camo", "holo", "finite", "vinyl", "reactive", "checker", "kaboom", "sensations",
+  "meta", "astral", "celestial", "interstellar", "seismic", "honeycomb", "peacock",
+];
+const pad = (s: string) => " " + s.toLowerCase().replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim() + " ";
+function matchesParallel(title: string, parallel: string): boolean {
+  const T = pad(title), P = pad(parallel);
+  for (const mod of MODS) {
+    const m = " " + mod + " ";
+    if (T.includes(m) && !P.includes(m)) return false; // listing has a variant the target lacks
+  }
+  return true;
+}
+
 async function ebayToken(app: string, cert: string): Promise<string> {
   if (cached && cached.exp > Date.now() + 30000) return cached.t;
   const r = await fetch("https://api.ebay.com/identity/v1/oauth2/token", {
@@ -37,7 +57,7 @@ Deno.serve(async (req: Request) => {
     const supplied = req.headers.get("apikey") ?? (req.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
     if (sk?.value && supplied !== sk.value) return json({ error: "unauthorized" }, 401);
 
-    const { q, limit } = await req.json();
+    const { q, limit, parallel } = await req.json();
     if (!q || typeof q !== "string") return json({ error: "q required" }, 400);
     const { data, error: sErr } = await admin.from("rmb_secrets").select("key,value").in("key", ["ebay_app_id", "ebay_cert_id"]);
     if (sErr) return json({ error: "secret store unavailable" }, 500);
@@ -50,7 +70,9 @@ Deno.serve(async (req: Request) => {
     const r = await fetch(url, { headers: { Authorization: `Bearer ${tok}`, "X-EBAY-C-MARKETPLACE-ID": "EBAY_US" } });
     if (!r.ok) return json({ error: `ebay ${r.status}` }, 502);
     const j = await r.json();
-    const items = (j.itemSummaries ?? [])
+    const raw = (j.itemSummaries ?? []).filter((it: Record<string, any>) =>
+      !parallel || typeof parallel !== "string" || matchesParallel(it.title ?? "", parallel));
+    const items = raw
       .map((it: Record<string, any>) => ({
         id: it.itemId,
         title: it.title,

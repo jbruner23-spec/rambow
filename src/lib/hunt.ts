@@ -17,9 +17,11 @@ export function parallelQuery(set: Pick<CardSet, 'year' | 'product' | 'player' |
   return [set.year, set.product, set.player, set.card_no, name].filter(Boolean).join(' ')
 }
 
-// Live eBay listings via the `hunt` edge function (creds stay server-side)
-export async function huntEbay(q: string): Promise<Listing[]> {
-  const { data, error } = await supabase.functions.invoke('hunt', { body: { q, limit: 20 } })
+// Live eBay listings via the `hunt` edge function (creds stay server-side).
+// `parallel` lets the function drop wrong-variant listings (e.g. Die-Cut Gold
+// when hunting base Gold).
+export async function huntEbay(q: string, parallel?: string): Promise<Listing[]> {
+  const { data, error } = await supabase.functions.invoke('hunt', { body: { q, limit: 30, parallel } })
   if (error) throw error
   return (data?.items ?? []) as Listing[]
 }

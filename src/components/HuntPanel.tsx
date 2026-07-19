@@ -17,7 +17,7 @@ export function HuntPanel({ set, parallel, onClose, onWatched }:
   useEffect(() => {
     let ignore = false
     setListings(null); setFailed(false)
-    huntEbay(q)
+    huntEbay(q, parallel.name)
       .then((r) => { if (!ignore) setListings(r) })
       .catch(() => { if (!ignore) setFailed(true) })
     return () => { ignore = true }
