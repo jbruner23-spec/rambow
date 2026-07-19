@@ -165,6 +165,13 @@ h1, h2, h3, h4, .display { font-family: 'Archivo', system-ui, sans-serif; letter
 .modal .note { margin-top: 12px; font-size: 12px; color: var(--muted); background: var(--bone); border-radius: 8px; padding: 8px 10px; }
 .modal .imgnote { margin-top: 10px; font-size: 11px; color: var(--dim); line-height: 1.4; }
 .modal .imgnote.you { color: var(--sol-deep); font-weight: 600; }
+.photo-btn {
+  margin-top: 14px; width: 100%; padding: 10px; border-radius: 9px;
+  border: 1px solid var(--royal); background: #fff; color: var(--royal);
+  font-size: 13px; font-weight: 700;
+}
+.photo-btn:hover:not(:disabled) { background: var(--royal); color: #fff; }
+.photo-btn:disabled { opacity: .6; }
 
 /* ---------- Completion meter ---------- */
 .meter { height: 9px; border-radius: 99px; background: var(--panel); overflow: hidden; }

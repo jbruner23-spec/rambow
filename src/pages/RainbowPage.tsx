@@ -163,7 +163,14 @@ export default function RainbowPage({ setId }: { setId: number }) {
         </>
       )}
 
-      {active && <CardModal card={active.card} setLabel={active.label} onClose={() => setActive(null)} />}
+      {active && (
+        <CardModal card={active.card} setLabel={active.label} onClose={() => setActive(null)}
+          onPhoto={(cardId, url) => {
+            const patch = (c: Card) => (c.id === cardId ? { ...c, image_url: url, image_source: 'upload' } : c)
+            setRows((prev) => prev?.map((p) => ({ ...p, rmb_cards: p.rmb_cards.map(patch) })) ?? prev)
+            setUnlinked((prev) => prev.map(patch))
+          }} />
+      )}
       {hunt && <HuntPanel set={set} parallel={hunt} onClose={() => setHunt(null)} />}
     </>
   )

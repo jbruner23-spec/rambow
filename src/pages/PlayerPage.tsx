@@ -98,7 +98,12 @@ export default function PlayerPage({ name }: { name: string }) {
         )
       })}
 
-      {active && <CardModal card={active.card} setLabel={active.label} onClose={() => setActive(null)} />}
+      {active && (
+        <CardModal card={active.card} setLabel={active.label} onClose={() => setActive(null)}
+          onPhoto={(cardId, url) => setSets((prev) => prev?.map((s) => ({
+            ...s, rmb_cards: s.rmb_cards.map((c) => c.id === cardId ? { ...c, image_url: url, image_source: 'upload' } : c),
+          })) ?? prev)} />
+      )}
     </>
   )
 }

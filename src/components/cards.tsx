@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import type { Card, Tier } from '../types'
 import { TIER_LABEL } from '../types'
 import { Term, termTitle } from './Term'
+import { uploadCardPhoto } from '../lib/upload'
 
 // glossary key per tier, for badge tooltips
 export const TIER_TERM: Record<Tier, string> = {
@@ -55,15 +56,36 @@ export function CardTile({ card, onClick }: { card: Card; onClick: () => void })
   )
 }
 
-export function CardModal({ card, setLabel, onClose }:
-  { card: Card; setLabel: string; onClose: () => void }) {
+export function CardModal({ card, setLabel, onClose, onPhoto }:
+  { card: Card; setLabel: string; onClose: () => void; onPhoto?: (cardId: number, url: string) => void }) {
   const grail = card.tier === 'one_of_one'
   const sn = serialText(card)
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [img, setImg] = useState(card.image_url)
+  const [src, setSrc] = useState(card.image_source)
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState<string | null>(null)
+
+  const onPick = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setBusy(true); setErr(null)
+    try {
+      const url = await uploadCardPhoto(card.id, file)
+      setImg(url); setSrc('upload')
+      onPhoto?.(card.id, url)
+    } catch (x) {
+      setErr('Upload failed — try again.')
+      console.error(x)
+    } finally { setBusy(false) }
+  }
+
   return (
     <div className="modal-scrim" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className={`mart${grail ? ' grail' : ''}`}>
-          <CardArt url={card.image_url} name={card.parallel_name ?? 'Base'} />
+          <CardArt url={img} name={card.parallel_name ?? 'Base'} />
         </div>
         <div className="mbody">
           <button className="close" onClick={onClose}>×</button>
@@ -75,13 +97,22 @@ export function CardModal({ card, setLabel, onClose }:
             <div><b><Term t="grade">Grade</Term></b>{card.graded ?? 'Raw'}</div>
             <div><b>Paid</b>{money(card.purchase_price)}</div>
           </div>
-          {card.image_url && card.image_source === 'ebay' && !card.likely_your_copy && (
+          {img && src === 'ebay' && !card.likely_your_copy && (
             <div className="imgnote">Representative image from an eBay listing — not your exact copy.</div>
           )}
-          {card.image_url && card.likely_your_copy && (
+          {img && src === 'upload' && (
+            <div className="imgnote you">Your photo.</div>
+          )}
+          {img && src === 'ebay' && card.likely_your_copy && (
             <div className="imgnote you">Listing showed your serial — likely your actual copy.</div>
           )}
           {card.notes && <div className="note">{card.notes}</div>}
+          <input ref={fileRef} type="file" accept="image/*" capture="environment"
+                 style={{ display: 'none' }} onChange={onPick} />
+          <button className="photo-btn" onClick={() => fileRef.current?.click()} disabled={busy}>
+            {busy ? 'Uploading…' : img && src === 'upload' ? '📷 Replace my photo' : '📷 Use my own photo'}
+          </button>
+          {err && <div className="imgnote" style={{ color: 'var(--sol-deep)' }}>{err}</div>}
         </div>
       </div>
     </div>
