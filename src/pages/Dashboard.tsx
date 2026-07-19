@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { money } from '../components/cards'
+import { SearchBox } from '../components/SearchBox'
+import { Term } from '../components/Term'
 
 interface PlayerStat {
   name: string
@@ -43,7 +45,14 @@ export default function Dashboard() {
   }, [])
 
   if (err) return <div className="empty">Couldn’t load: {err}</div>
-  if (!stats) return <div className="loading">Loading the collection…</div>
+  if (!stats) {
+    return (
+      <>
+        <div className="skel skel-band" />
+        <div className="skel-list">{[0, 1, 2, 3].map((i) => <div className="skel skel-row" key={i} />)}</div>
+      </>
+    )
+  }
 
   const total = stats.reduce(
     (a, s) => ({
@@ -62,10 +71,12 @@ export default function Dashboard() {
       <div className="statband">
         <div className="stat"><b>{total.cards}</b><span>Cards</span></div>
         <div className="stat"><b>{total.sets}</b><span>Card sets</span></div>
-        <div className="stat"><b>{total.ones}</b><span>1/1s</span></div>
-        <div className="stat"><b>{total.graded}</b><span>Graded</span></div>
+        <div className="stat"><b>{total.ones}</b><span><Term t="1/1">1/1s</Term></span></div>
+        <div className="stat"><b>{total.graded}</b><span><Term t="grade">Graded</Term></span></div>
         <div className="stat"><b>{money(total.spend)}</b><span>Invested</span></div>
       </div>
+
+      <SearchBox />
 
       {featured.length > 0 && (
         <>

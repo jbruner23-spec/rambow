@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react'
-import type { Card } from '../types'
+import type { Card, Tier } from '../types'
 import { TIER_LABEL } from '../types'
+import { Term, termTitle } from './Term'
+
+// glossary key per tier, for badge tooltips
+export const TIER_TERM: Record<Tier, string> = {
+  one_of_one: '1/1', short_print: 'sp', numbered: 'numbered', base: 'base', unknown: 'unnumbered',
+}
 
 // Sourced image with graceful fallback to the parallel-name placeholder
 // (eBay URLs can 404 when a listing ends). no-referrer keeps the CDN from
@@ -34,7 +40,11 @@ export function CardTile({ card, onClick }: { card: Card; onClick: () => void })
   return (
     <button className="tile" onClick={onClick}>
       <div className={`art${grail ? ' grail' : ''}`}>
-        {tier && <span className={`badge${grail ? ' grail' : ''}`}>{tier}</span>}
+        {tier && (
+          <span className={`badge${grail ? ' grail' : ''}`}
+                title={card.tier ? termTitle(TIER_TERM[card.tier]) : undefined}>{tier}</span>
+        )}
+        {card.likely_your_copy && <span className="badge yours" title={termTitle('your copy')}>Your copy</span>}
         <CardArt url={card.image_url} name={card.parallel_name ?? 'Base'} />
       </div>
       <div className="cap">
@@ -60,9 +70,9 @@ export function CardModal({ card, setLabel, onClose }:
           <h3>{card.parallel_name ?? 'Base'}</h3>
           <div className="msub">{setLabel}</div>
           <div className="mgrid">
-            <div><b>Serial</b>{sn ?? 'Unnumbered'}</div>
-            <div><b>Print run</b>{card.print_run != null ? card.print_run.toLocaleString() : 'Unknown'}</div>
-            <div><b>Grade</b>{card.graded ?? 'Raw'}</div>
+            <div><b><Term t="serial">Serial</Term></b>{sn ?? 'Unnumbered'}</div>
+            <div><b><Term t="print run">Print run</Term></b>{card.print_run != null ? card.print_run.toLocaleString() : 'Unknown'}</div>
+            <div><b><Term t="grade">Grade</Term></b>{card.graded ?? 'Raw'}</div>
             <div><b>Paid</b>{money(card.purchase_price)}</div>
           </div>
           {card.image_url && card.image_source === 'ebay' && !card.likely_your_copy && (

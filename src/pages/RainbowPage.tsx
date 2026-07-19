@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import type { Card, CardSet, Parallel, RainbowProgress } from '../types'
 import { TIER_LABEL } from '../types'
-import { CardArt, CardModal, serialText } from '../components/cards'
+import { CardArt, CardModal, serialText, TIER_TERM } from '../components/cards'
 import { HuntPanel } from '../components/HuntPanel'
+import { Term, termTitle } from '../components/Term'
 
 type ParallelRow = Parallel & { rmb_cards: Card[] }
 
@@ -49,7 +50,14 @@ export default function RainbowPage({ setId }: { setId: number }) {
   }, [setId])
 
   if (err) return <div className="empty">Couldn’t load: {err}</div>
-  if (!set || !rows) return <div className="loading">Loading rainbow…</div>
+  if (!set || !rows) {
+    return (
+      <>
+        <div className="skel skel-band" />
+        <div className="skel-grid">{Array.from({ length: 12 }, (_, i) => <div className="skel skel-tile" key={i} />)}</div>
+      </>
+    )
+  }
 
   const label = `${set.year} ${set.product}${set.card_no ? ` #${set.card_no}` : ''}`
   const total = prog?.checklist_total ?? rows.length
@@ -66,9 +74,9 @@ export default function RainbowPage({ setId }: { setId: number }) {
 
       <div className="rainbow-head">
         <h1>{set.player}
-          {pct >= 50 && <span className="chip-chase">Active chase</span>}
+          {pct >= 50 && <Term t="active chase"><span className="chip-chase">Active chase</span></Term>}
         </h1>
-        <div className="sub">{label} · rainbow</div>
+        <div className="sub">{label} · <Term t="rainbow">rainbow</Term></div>
         <div className="prog">
           <span className="big">{owned}/{total}</span>
           <div className="meter"><i style={{ width: `${pct}%` }} /></div>
@@ -89,7 +97,8 @@ export default function RainbowPage({ setId }: { setId: number }) {
               <button className="tile" key={p.id}
                       onClick={() => setActive({ card, label })}>
                 <div className={`art${grail ? ' grail' : ''}`}>
-                  <span className={`badge${grail ? ' grail' : ''}`}>{TIER_LABEL[p.tier]}</span>
+                  <span className={`badge${grail ? ' grail' : ''}`} title={termTitle(TIER_TERM[p.tier])}>{TIER_LABEL[p.tier]}</span>
+                  {card.likely_your_copy && <span className="badge yours" title={termTitle('your copy')}>Your copy</span>}
                   <CardArt url={card.image_url} name={p.name} />
                 </div>
                 <div className="cap">
@@ -103,7 +112,7 @@ export default function RainbowPage({ setId }: { setId: number }) {
             <button className={`tile missing${p.image_url ? ' has-ref' : ''}`} key={p.id}
                     onClick={() => setHunt(p)}>
               <div className={`art${grail ? ' grail' : ''}`}>
-                <span className="badge">{TIER_LABEL[p.tier]}</span>
+                <span className="badge" title={termTitle(TIER_TERM[p.tier])}>{TIER_LABEL[p.tier]}</span>
                 <CardArt url={p.image_url} name={p.name} />
               </div>
               <div className="cap">

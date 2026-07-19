@@ -49,7 +49,11 @@ export default function PlayerPage({ name }: { name: string }) {
   }, [name])
 
   if (err) return <div className="empty">Couldn’t load: {err}</div>
-  if (!sets) return <div className="loading">Loading {name}…</div>
+  if (!sets) {
+    return (
+      <div className="skel-grid">{Array.from({ length: 10 }, (_, i) => <div className="skel skel-tile" key={i} />)}</div>
+    )
+  }
   if (sets.length === 0) return (
     <div className="empty">
       No cards found for “{name}”. <Link to="/" style={{ color: 'var(--royal)', fontWeight: 600 }}>Back to all players</Link>
