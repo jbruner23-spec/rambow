@@ -30,3 +30,4 @@ scripts/seed.sql
 scripts/*.err
 scripts/*.log
 scripts/.source_all.log
+scripts/.nightly.*
