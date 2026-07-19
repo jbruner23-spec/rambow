@@ -3,11 +3,17 @@
 -- both sides prevents an owned parallel from being double-counted as "missing".
 
 create or replace function rmb_norm(s text) returns text language sql immutable as $$
+  -- drop "prizm"/"1/1"; unify checkerboard/checker and &,/,"and" separators so
+  -- "Red White & Blue" == "Red/White/Blue" and "...Checkerboard" == "...Checker".
   select trim(regexp_replace(
-           regexp_replace(
-             regexp_replace(lower(coalesce(s,'')), '\yprizm\y', '', 'g'),
-             '1\s*/\s*1|1 of 1', '', 'g'),
-           '\s+', ' ', 'g'))
+    regexp_replace(
+      replace(replace(replace(replace(
+        regexp_replace(
+          regexp_replace(lower(coalesce(s,'')), '\yprizm\y', '', 'g'),
+          '1\s*/\s*1|1 of 1', '', 'g'),
+        'checkerboard','checker'),
+      '&',' '), '/',' '), ' and ',' '),
+    '\s+', ' ', 'g'), '\s+$', ''))
 $$;
 
 -- Seed a card set's checklist: sync owned parallels (always 'verified' — you own
