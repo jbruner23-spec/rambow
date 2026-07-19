@@ -47,6 +47,7 @@ distinct owned count and `parallel_id is null` must be 0 for that set.
 | Matthew Stafford 2022 Prizm #159 | 11/37 | 2022 Prizm (`verified`) |
 | Aaron Donald 2023 Prizm #162 | 14/49 | 2023 Prizm (`verified`) |
 | Marshall Faulk 2022 Prizm #167 | 26/41 | 2022 Prizm (`verified`) |
+| Marshall Faulk 2021 Select #39 | 24/29 | 2021 Select Concourse (`verified`) |
 
 Prizm base lists are exact per year (Cardboard Connection); Select proxy tiers reuse
 the 2021 structure and are marked `estimated`. Missing exotic parallels you don't own
