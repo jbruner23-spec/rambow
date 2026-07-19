@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import type { Card, CardSet, Parallel, RainbowProgress } from '../types'
 import { TIER_LABEL } from '../types'
-import { CardModal, serialText } from '../components/cards'
+import { CardArt, CardModal, serialText } from '../components/cards'
 
 type ParallelRow = Parallel & { rmb_cards: Card[] }
 
@@ -88,9 +88,7 @@ export default function RainbowPage({ setId }: { setId: number }) {
                       onClick={() => setActive({ card, label })}>
                 <div className={`art${grail ? ' grail' : ''}`}>
                   <span className={`badge${grail ? ' grail' : ''}`}>{TIER_LABEL[p.tier]}</span>
-                  {card.image_url
-                    ? <img src={card.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    : <span className="ph">{p.name}</span>}
+                  <CardArt url={card.image_url} name={p.name} />
                 </div>
                 <div className="cap">
                   <div className="pn">{p.name}</div>
@@ -100,10 +98,10 @@ export default function RainbowPage({ setId }: { setId: number }) {
             )
           }
           return (
-            <div className="tile missing" key={p.id}>
+            <div className={`tile missing${p.image_url ? ' has-ref' : ''}`} key={p.id}>
               <div className={`art${grail ? ' grail' : ''}`}>
                 <span className="badge">{TIER_LABEL[p.tier]}</span>
-                <span className="ph">{p.name}</span>
+                <CardArt url={p.image_url} name={p.name} />
               </div>
               <div className="cap">
                 <div className="pn">{p.name}</div>

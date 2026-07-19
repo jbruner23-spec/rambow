@@ -153,6 +153,8 @@ h1, h2, h3, h4, .display { font-family: 'Archivo', system-ui, sans-serif; letter
 .modal .mgrid b { display: block; font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); font-weight: 700; }
 .modal .close { float: right; background: none; border: none; font-size: 22px; color: var(--muted); line-height: 1; padding: 0 0 0 10px; }
 .modal .note { margin-top: 12px; font-size: 12px; color: var(--muted); background: var(--bone); border-radius: 8px; padding: 8px 10px; }
+.modal .imgnote { margin-top: 10px; font-size: 11px; color: var(--dim); line-height: 1.4; }
+.modal .imgnote.you { color: var(--sol-deep); font-weight: 600; }
 
 /* ---------- Completion meter ---------- */
 .meter { height: 9px; border-radius: 99px; background: var(--panel); overflow: hidden; }
@@ -188,6 +190,9 @@ h1, h2, h3, h4, .display { font-family: 'Archivo', system-ui, sans-serif; letter
 .tile.missing .art .ph { color: rgba(16,33,75,.4); }
 .tile.missing .badge { background: var(--dim); }
 .tile.missing .cap .pn { color: var(--muted); }
+/* missing tile WITH a sourced reference image: show it, dimmed, so it still reads as "not owned" */
+.tile.missing.has-ref .art { background: var(--panel); }
+.tile.missing.has-ref .art img { opacity: .6; filter: grayscale(.12); }
 .tile.missing .miss-label { font-size: 9px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--sol-deep); }
 
 .loading, .empty { text-align: center; color: var(--muted); padding: 60px 20px; font-size: 14px; }
