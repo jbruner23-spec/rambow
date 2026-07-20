@@ -54,8 +54,9 @@ distinct owned count and `parallel_id is null` must be 0 for that set.
 | Aaron Donald 2023 Select #113 | 8/18 | 2021 Select Premier (proxy, `estimated`) |
 | Aaron Donald 2016 Select #16 | 5/13 | 2021 Select Concourse (proxy, `estimated`) |
 | Marshall Faulk 2016 Select #174 · 2017 #130; Aaron Donald 2018 #111 | 4–7/14–17 | 2021 Select Premier (proxy, `estimated`) |
+| Marshall Faulk 2014 Prizm #48 | 13/19 | 2014 Prizm base (Cardboard Connection, `verified`) |
 
-**25 rainbows tracked** (verified across all: 0 owned cards mis-flagged as missing).
+**26 rainbows tracked** (verified across all: 0 owned cards mis-flagged as missing).
 Prizm base lists are exact per year (Cardboard Connection); Select proxy tiers reuse
 the 2021 structure and are marked `estimated`. Missing exotic parallels you don't own
 may still be absent, so a % can ease as the checklist grows.
